@@ -1,19 +1,16 @@
-#define __S_TABLE_C__
-#include "stable.h"
-#undef __S_TABLE_C__
-
 #define __S_SRC_FILE__
-#include "slist.h"
+#include "smdata.h"
+#include "stable.h"
 #undef __S_SRC_FILE__
 
 #include <stdio.h>
 #include <stdlib.h>
 
-#define TABLESIZE 500
-
 struct _smap {
     slist** table;
 };
+
+smap __S_GLOBAL_TABLE__ = { .table = NULL };
 
 long unsigned int
 hash(void* val)
@@ -63,11 +60,25 @@ smap_insert(smap* map, void* key, void* value)
     return map;
 }
 
+slist*
+smap_key(smap* map, void* key)
+{
+    if(map != NULL && key != NULL)
+        return map->table[hash(key)];
+
+    return NULL;
+}
+
 void
 smap_free(smap* map)
 {
     if(map != NULL) {
-        slist_free(map->table, (FreeFn) smetadata_free);
+        int     size  = TABLESIZE;
+        slist** table = map->table;
+
+        while(size--)
+            slist_free(*table++, (FreeFn) smdata_free);
+
         free(map);
     }
 }

@@ -1,7 +1,7 @@
 #ifndef __S_LIST_H__
 #define __S_LIST_H__
 
-#if !defined(__S_LIST_C__) && !defined(__S_HEADER__) && !defined(__S_SRC_FILE__)
+#if !defined(__S_HEADER__) && !defined(__S_SRC_FILE__)
 #error "Private header, only <stest.h> can be included directly."
 #endif
 

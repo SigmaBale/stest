@@ -1,10 +1,14 @@
-#define __S_SUITE_C__
+#define __S_SRC_FILE__
+#include "smdata.h"
 #include "ssuite.h"
-#undef __S_SUITE_C__
+#include "stable.h"
+#undef __S_SRC_FILE__
 
 #include <stdio.h>
 #include <stdlib.h>
 #include <time.h>
+
+typedef struct _stest stest;
 
 struct _stest {
     const char* name;
@@ -49,7 +53,7 @@ ssuite_new(const char* name)
  * to stringify the fn pointer that gets passed.
  */
 void
-_ssuite_add_test(ssuite* suite, const char* name, fnptr fn)
+__ssuite_add_test(ssuite* suite, const char* name, fnptr fn)
 {
     if(suite != NULL && name != NULL && fn != NULL) {
         stest* test = stest_new(name, fn);
@@ -71,25 +75,31 @@ ssuite_run_tests(const ssuite* suite)
         if(iterator != NULL) {
             const stest* test;
             while((test = slistiter_next(iterator)) != NULL) {
-                // print test
+                PRINT_TEST(test->name);
                 clock_t tic = clock();
                 test->fn();
                 clock_t toc = clock();
-                // if failed then print failed and
-                // print all fails
-                // else print success
-                // fail or success append time to the print
+
+                long double time_elapsed = (double) (toc - tic) / CLOCKS_PER_SEC;
+
+                slist* entry;
+                if((entry = smap_key(&__S_GLOBAL_TABLE__, (void*) test->name)) != NULL) {
+                    PRINT_FAILURE(time_elapsed);
+
+                    slistIterator* entry_iterator = slist_iterator(entry);
+
+                    if(entry_iterator == NULL) {
+                        fprintf(stderr, "out of memory\n");
+                        exit(EXIT_FAILURE);
+                    }
+
+                    const smdata* current;
+                    while((current = slistiter_next(entry_iterator)) != NULL)
+                        smdata_print(current);
+                } else
+                    PRINT_SUCCESS(time_elapsed);
             }
         }
-    }
-}
-
-void
-ssuite_free(ssuite* suite, FreeFn free_fn)
-{
-    if(suite != NULL) {
-        slist_free(suite->tests, free_fn);
-        free(suite);
     }
 }
 
@@ -98,4 +108,13 @@ stest_free(stest* test)
 {
     if(test != NULL)
         free(test);
+}
+
+void
+ssuite_free(ssuite* suite)
+{
+    if(suite != NULL) {
+        slist_free(suite->tests, (FreeFn) stest_free);
+        free(suite);
+    }
 }

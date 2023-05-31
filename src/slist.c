@@ -1,6 +1,6 @@
-#define __S_LIST_C__
+#define __S_SRC_FILE__
 #include "slist.h"
-#undef __S_LIST_C__
+#undef __S_SRC_FILE__
 
 #include <stdlib.h>
 

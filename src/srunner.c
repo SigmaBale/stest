@@ -1,6 +1,7 @@
-#define __S_RUNNER_C__
+#define __S_SRC_FILE__
+#include "slist.h"
 #include "srunner.h"
-#undef __S_RUNNER_C__
+#undef __S_SRC_FILE__
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -72,6 +73,6 @@ runner_run(srunner* runner)
 void
 runner_free(srunner* runner)
 {
-    slist_free(runner->suites, (FreeFn) stest_free);
+    slist_free(runner->suites, (FreeFn) ssuite_free);
     free(runner);
 }

@@ -2,9 +2,6 @@
 #define __S_TEST_H__
 
 #include "stest_internal.h"
-#include <stddef.h>
-#include <stdio.h>
-#include <time.h>
 
 #ifndef TEST
 /*
@@ -12,7 +9,7 @@
  * better clarity as to which function
  * is a test.
  */
-#define TEST(test_fn) void test_fn()
+#define TEST(test_fn) void (test_fn)()
 #endif
 
 /*
@@ -37,17 +34,27 @@
 #endif
 
 /*
- * Assert SRC string is equivalent to DST string. 
+ * Assert SRC string is equivalent to DST string.
  */
 #ifndef ASSERT_STR_EQ
-#define ASSERT_STR_EQ(src, dst) _ASSERT_STR_EQ(src, dst, __FILE__, __LINE__, __func__)
+#define ASSERT_STR_EQ(src, dst)                                                \
+  _ASSERT_STR_EQ(src, dst, __FILE__, __LINE__, __func__)
 #endif
 
 /*
- * Assert SRC string is not equivalent to DST string. 
+ * Assert SRC string is not equivalent to DST string.
  */
 #ifndef ASSERT_STR_NEQ
-#define ASSERT_STR_NEQ(src, dst) _ASSERT_STR_NEQ(src, dst, __FILE__, __LINE__, __func__)
+#define ASSERT_STR_NEQ(src, dst)                                               \
+  _ASSERT_STR_NEQ(src, dst, __FILE__, __LINE__, __func__)
 #endif
+
+/*
+ * Inserts FN into SSUITE.
+ */
+#ifndef ssuite_add_test
+#define ssuite_add_test(ssuite, fn) _ssuite_add_test(ssuite, fn)
+#endif
+
 
 #endif
