@@ -3,6 +3,9 @@ INCDIRS = src include
 SRCDIR = src
 OBJDIR = build/obj
 
+HEADER_INSTALL_DIR = /usr/local/include
+BIN_INSTALL_DIR = /usr/local/bin
+
 CC = gcc
 INCLUDES := $(foreach dir,$(INCDIRS),-I$(dir))
 DEPFLAGS = -MD -MP
@@ -25,11 +28,13 @@ clean:
 	@rm -rf $(OBJFILES) $(DEPFILES) $(BIN)
 
 install: $(BIN)
-	@sudo cp -i include/stest.h /usr/local/include
-	@sudo cp -i build/release/libstest.so /usr/local/bin
+	@sudo cp -i include/stest.h $(HEADER_INSTALL_DIR)
+	@sudo cp -i build/release/libstest.so $(BIN_INSTALL_DIR) 
 
 uninstall:
-	@sudo rm /usr/local/include/stest.h
-	@sudo rm /usr/local/bin/libstest.so
+	@sudo rm $(HEADER_INSTALL_DIR)/stest.h
+	@sudo rm $(BIN_INSTALL_DIR)/libstest.so
+
+-include $(DEPFILES)
 
 .PHONY: all clean install uninstall
