@@ -24,4 +24,12 @@ $(OBJDIR)/%.o: $(SRCDIR)/%.c
 clean:
 	@rm -rf $(OBJFILES) $(DEPFILES) $(BIN)
 
-.PHONY: all clean
+install: $(BIN)
+	@sudo cp -i include/stest.h /usr/local/include
+	@sudo cp -i build/release/libstest.so /usr/local/bin
+
+uninstall:
+	@sudo rm /usr/local/include/stest.h
+	@sudo rm /usr/local/bin/libstest.so
+
+.PHONY: all clean install uninstall
