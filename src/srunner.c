@@ -18,23 +18,44 @@ static const char* _S_BRIGHT_GREEN_BOLD   = "\x1b[1;92m";
 static const char* _S_BRIGHT_YELLOW_BOLD  = "\x1b[1;93m";
 static const char* _S_BRIGHT_BLUE_BOLD    = "\x1b[1;94m";
 static const char* _S_BRIGHT_MAGENTA_BOLD = "\x1b[1;95m";
+static const char* _S_BRIGHT_CYAN_BOLD    = "\x1b[1;96m";
+static const char* _S_BRIGHT_WHITE_BOLD   = "\x1b[1;97m";
 
-#define PRINT_TEST(filename)        \
-    fprintf(stdout,                 \
-            "\n%s%s%s ---------> ", \
-            _S_BRIGHT_YELLOW_BOLD,  \
-            filename,               \
-            _S_RESET_FORMAT)
+static const unsigned int width        = 30;
+static const unsigned int width_result = 4;
 
-#define PRINT_SUCCESS(time)            \
-    fprintf(stdout,                    \
-            "%ssucceeded%s [%Lf s]\n", \
-            _S_BRIGHT_GREEN_BOLD,      \
-            _S_RESET_FORMAT,           \
-            time)
+#define PRINT_TEST(filename)       \
+    fprintf(stdout,                \
+            "%s%-*s%s%s",          \
+            _S_BRIGHT_YELLOW_BOLD, \
+            width,                 \
+            filename,              \
+            _S_RESET_FORMAT,       \
+            "----> ")
 
-#define PRINT_FAILURE(time) \
-    fprintf(stdout, "%sfailed%s [%Lf s]\n", _S_BRIGHT_RED_BOLD, _S_RESET_FORMAT, time)
+#define PRINT_SUCCESS(time)        \
+    fprintf(stdout,                \
+            "%s%-*s%s [%Lf ms]\n", \
+            _S_BRIGHT_GREEN_BOLD,  \
+            width_result,          \
+            "ok",                  \
+            _S_RESET_FORMAT,       \
+            time * 1000)
+
+#define PRINT_FAILURE(time)        \
+    fprintf(stdout,                \
+            "%s%-*s%s [%Lf ms]\n", \
+            _S_BRIGHT_RED_BOLD,    \
+            width_result,          \
+            "fail",                \
+            _S_RESET_FORMAT,       \
+            time * 1000)
+
+#define PRINT_SUITE(suite) \
+    fprintf(stdout, "\n%s-%s%s\n", _S_BRIGHT_CYAN_BOLD, suite, _S_RESET_FORMAT)
+
+#define PRINT_FAILED_AT_SEPARATOR \
+    fprintf(stdout, "%s~%s\n", _S_BRIGHT_RED_BOLD, _S_RESET_FORMAT)
 
 /***************************************************************************************/
 
@@ -88,29 +109,33 @@ smdata_print(const smdata* metadata)
 {
     if(metadata->exp != NULL) {
         fprintf(stdout,
-                "%s%s failed at:%s %s: line %d -> %sEXPRESSION%s: '%s'\n",
-                _S_BRIGHT_YELLOW_BOLD,
-                metadata->fn_name,
+                "%sfailed at:%s %s: %d >>> %sEXPRESSION%s: '%s%s%s'\n",
+                _S_BRIGHT_RED_BOLD,
                 _S_RESET_FORMAT,
                 metadata->file,
                 metadata->line,
                 _S_BRIGHT_BLUE_BOLD,
                 _S_RESET_FORMAT,
-                metadata->exp);
+                _S_BRIGHT_WHITE_BOLD,
+                metadata->exp,
+                _S_RESET_FORMAT);
     } else {
         fprintf(stdout,
-                "%s%s failed at:%s %s: line %d -> %sLEFT%s: '%s', %sRIGHT%s: '%s'\n",
-                _S_BRIGHT_YELLOW_BOLD,
-                metadata->fn_name,
+                "%sfailed at:%s %s: %d >>> %sLEFT%s: '%s%s%s', %sRIGHT%s: '%s%s%s'\n",
+                _S_BRIGHT_RED_BOLD,
                 _S_RESET_FORMAT,
                 metadata->file,
                 metadata->line,
                 _S_BRIGHT_BLUE_BOLD,
                 _S_RESET_FORMAT,
+                _S_BRIGHT_WHITE_BOLD,
                 metadata->src,
+                _S_RESET_FORMAT,
                 _S_BRIGHT_MAGENTA_BOLD,
                 _S_RESET_FORMAT,
-                metadata->dst);
+                _S_BRIGHT_WHITE_BOLD,
+                metadata->dst,
+                _S_RESET_FORMAT);
     }
 }
 
@@ -171,10 +196,12 @@ void
 ssuite_run_tests(const ssuite* suite)
 {
     if(suite != NULL) {
-        slistIterator* iterator = slist_iterator(suite->tests);
+        slistIterator* iterator = slist_iterator_rev(suite->tests);
         if(iterator != NULL) {
+            PRINT_SUITE(suite->name);
+
             const stest* test;
-            while((test = slistiter_next(iterator)) != NULL) {
+            while((test = slistiter_next_back(iterator)) != NULL) {
                 PRINT_TEST(test->name);
                 clock_t tic = clock();
                 test->fn();
@@ -193,9 +220,11 @@ ssuite_run_tests(const ssuite* suite)
                         exit(EXIT_FAILURE);
                     }
 
+                    PRINT_FAILED_AT_SEPARATOR;
                     const smdata* current;
                     while((current = slistiter_next_back(entry_iterator)) != NULL)
                         smdata_print(current);
+                    PRINT_FAILED_AT_SEPARATOR;
                 } else
                     PRINT_SUCCESS(time_elapsed);
             }
@@ -268,7 +297,10 @@ srunner_run(srunner* runner)
 
         const ssuite* current;
 
-        fprintf(stdout, "Running all suites...\n");
+        fprintf(stdout,
+                "Running all %ssuites%s ...\n",
+                _S_BRIGHT_CYAN_BOLD,
+                _S_RESET_FORMAT);
 
         clock_t tic = clock();
 
@@ -278,7 +310,12 @@ srunner_run(srunner* runner)
         clock_t toc = clock();
 
         double elapsed_time = (double) (toc - tic) / CLOCKS_PER_SEC;
-        fprintf(stdout, "Total elapsed time: %f seconds\n", elapsed_time);
+
+        fprintf(stdout,
+                "\nTotal elapsed time: %s%f%s seconds\n",
+                _S_BRIGHT_GREEN_BOLD,
+                elapsed_time,
+                _S_RESET_FORMAT);
     }
 }
 
