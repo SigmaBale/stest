@@ -5,10 +5,6 @@
 #error "Private header, only <stest.h> can be included directly."
 #endif
 
-#define __S_HEADER__
-#include "slist.h"
-#undef __S_HEADER__
-
 #ifndef TABLESIZE
 #define TABLESIZE 500
 #endif
@@ -23,6 +19,6 @@ smap *smap_insert(smap *map, void *key, void *value);
 
 void smap_free(smap *map);
 
-slist *smap_key(smap *map, void *key);
+void *smap_key(smap *map, void *key);
 
 #endif

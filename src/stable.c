@@ -1,6 +1,7 @@
 #define __S_SRC_FILE__
-#include "smdata.h"
+#include "slist.h"
 #include "stable.h"
+#include "srunner.h"
 #undef __S_SRC_FILE__
 
 #include <stdio.h>
@@ -60,7 +61,7 @@ smap_insert(smap* map, void* key, void* value)
     return map;
 }
 
-slist*
+void*
 smap_key(smap* map, void* key)
 {
     if(map != NULL && key != NULL)

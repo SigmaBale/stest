@@ -9,9 +9,7 @@ typedef void (*FreeFn)(void *);
 
 typedef struct _slist slist;
 
-typedef struct _snode snode;
-
-typedef struct _slistiterator slistIterator;
+typedef struct _slsIter slistIterator;
 
 slist *slist_new(void);
 
@@ -25,6 +23,10 @@ void slist_free(slist *list, FreeFn free_fn);
 
 slistIterator *slist_iterator(slist *ls);
 
+slistIterator *slist_iterator_rev(slist *ls);
+
 const void *slistiter_next(slistIterator *iterator);
+
+const void *slistiter_next_back(slistIterator *iterator);
 
 #endif

@@ -4,18 +4,18 @@
 
 #include <stdlib.h>
 
+typedef struct _snode {
+    void*          element;
+    struct _snode* next;
+    struct _snode* prev;
+} snode;
+
 struct _slist {
     snode* front;
     snode* back;
 };
 
-struct _snode {
-    void*  element;
-    snode* next;
-    snode* prev;
-};
-
-struct _slistiterator {
+struct _slsIter {
     const void* element;
     snode*      next;
 };
@@ -30,6 +30,22 @@ slist_iterator(slist* ls)
 
         iterator->element = (const void*) ls->front->element;
         iterator->next    = ls->front->next;
+
+        return iterator;
+    }
+    return NULL;
+}
+
+slistIterator*
+slist_iterator_rev(slist* ls)
+{
+    if(ls != NULL && ls->back != NULL) {
+        slistIterator* iterator = (slistIterator*) malloc(sizeof(slistIterator));
+        if(iterator == NULL)
+            return NULL;
+
+        iterator->element = (const void*) ls->back->element;
+        iterator->next    = ls->back->prev;
 
         return iterator;
     }
@@ -53,6 +69,29 @@ slistiter_next(slistIterator* iterator)
             iterator->element = NULL;
 
         iterator->next = iterator->next->next;
+
+        return temp;
+    }
+    return NULL;
+}
+
+const void*
+slistiter_next_back(slistIterator* iterator)
+{
+    if(iterator != NULL) {
+        if(iterator->element == NULL) {
+            free(iterator);
+            return NULL;
+        }
+
+        const void* temp = iterator->element;
+
+        if(iterator->next != NULL)
+            iterator->element = iterator->next->element;
+        else
+            iterator->element = NULL;
+
+        iterator->next = iterator->next->prev;
 
         return temp;
     }

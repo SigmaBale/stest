@@ -5,12 +5,15 @@
 #error "Private header, only <stest.h> can be included directly"
 #endif
 
-#define __S_HEADER__
-#include "ssuite.h"
-#undef __S_HEADER__
 #include <stddef.h>
 
 typedef struct _srunner srunner;
+
+typedef struct _ssuite ssuite;
+
+typedef struct _smdata smdata;
+
+typedef void (*fnptr)(void);
 
 srunner *runner_new(void);
 
@@ -21,5 +24,16 @@ void runner_add_suites(srunner *runner, ssuite **suites, size_t len);
 void runner_run(srunner *runner);
 
 void runner_free(srunner *runner);
+
+ssuite *ssuite_new(const char *name);
+
+void ssuite_free(ssuite *suite);
+
+smdata *smdata_new(const char *exp, const char *src, const char *dst,
+                   const char *file, const int line, const char *fn_name);
+
+void smdata_free(smdata *metadata);
+
+void assert_failed(smdata *metadata);
 
 #endif
