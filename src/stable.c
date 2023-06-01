@@ -1,7 +1,7 @@
 #define __S_SRC_FILE__
 #include "slist.h"
-#include "stable.h"
 #include "srunner.h"
+#include "stable.h"
 #undef __S_SRC_FILE__
 
 #include <stdio.h>
@@ -46,11 +46,11 @@ smap_insert(smap* map, void* key, void* value)
         return NULL;
 
     slist* current;
-    if(map->table[hashvalue] == NULL) {
-        if((current = map->table[hashvalue] = slist_new()) == NULL) {
-            fprintf(stderr, "out of memory");
-            exit(EXIT_FAILURE);
-        }
+    if((current = map->table[hashvalue]) == NULL
+       && (current = (map->table[hashvalue] = slist_new())) == NULL)
+    {
+        fprintf(stderr, "out of memory");
+        exit(EXIT_FAILURE);
     }
 
     if(slist_insert_front(current, value) != 0) {
