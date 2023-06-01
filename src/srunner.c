@@ -19,18 +19,22 @@ static const char* _S_BRIGHT_YELLOW_BOLD  = "\x1b[1;93m";
 static const char* _S_BRIGHT_BLUE_BOLD    = "\x1b[1;94m";
 static const char* _S_BRIGHT_MAGENTA_BOLD = "\x1b[1;95m";
 
-#define PRINT_TEST(filename)              \
-    fprintf(stdout,                       \
-            "Running test %s%s%s ----> ", \
-            _S_BRIGHT_YELLOW_BOLD,        \
-            filename,                     \
+#define PRINT_TEST(filename)        \
+    fprintf(stdout,                 \
+            "\n%s%s%s ---------> ", \
+            _S_BRIGHT_YELLOW_BOLD,  \
+            filename,               \
             _S_RESET_FORMAT)
 
-#define PRINT_SUCCESS(time) \
-    fprintf(stdout, "%ssucceeded%s [%Lf]\n", _S_BRIGHT_GREEN_BOLD, _S_RESET_FORMAT, time)
+#define PRINT_SUCCESS(time)            \
+    fprintf(stdout,                    \
+            "%ssucceeded%s [%Lf s]\n", \
+            _S_BRIGHT_GREEN_BOLD,      \
+            _S_RESET_FORMAT,           \
+            time)
 
 #define PRINT_FAILURE(time) \
-    fprintf(stdout, "%sfailed%s [%Lf]\n", _S_BRIGHT_RED_BOLD, _S_RESET_FORMAT, time)
+    fprintf(stdout, "%sfailed%s [%Lf s]\n", _S_BRIGHT_RED_BOLD, _S_RESET_FORMAT, time)
 
 /***************************************************************************************/
 
@@ -84,7 +88,7 @@ smdata_print(const smdata* metadata)
 {
     if(metadata->exp != NULL) {
         fprintf(stdout,
-                "%s%s failed:%s %s:%d -> %sEXPRESSION%s: '%s'\n",
+                "%s%s failed at:%s %s: line %d -> %sEXPRESSION%s: '%s'\n",
                 _S_BRIGHT_YELLOW_BOLD,
                 metadata->fn_name,
                 _S_RESET_FORMAT,
@@ -95,7 +99,7 @@ smdata_print(const smdata* metadata)
                 metadata->exp);
     } else {
         fprintf(stdout,
-                "%s%s failed:%s %s:%d -> %sLEFT%s: '%s', %sRIGHT%s: '%s'\n",
+                "%s%s failed at:%s %s: line %d -> %sLEFT%s: '%s', %sRIGHT%s: '%s'\n",
                 _S_BRIGHT_YELLOW_BOLD,
                 metadata->fn_name,
                 _S_RESET_FORMAT,
@@ -149,7 +153,7 @@ ssuite_new(const char* name)
 }
 
 void
-_ssuite_add_test(ssuite* suite, const char* name, fnptr fn)
+_ssuite_add_test(ssuite* suite, const char* name, void (*fn)(void))
 {
     if(suite != NULL && name != NULL && fn != NULL) {
         stest* test = stest_new(name, fn);
@@ -220,7 +224,7 @@ struct _srunner {
 };
 
 srunner*
-runner_new(void)
+srunner_new(void)
 {
     srunner* runner = (srunner*) malloc(sizeof(srunner));
 
@@ -234,7 +238,7 @@ runner_new(void)
 }
 
 void
-runner_add_suite(srunner* runner, ssuite* suite)
+srunner_add_suite(srunner* runner, ssuite* suite)
 {
     if(runner != NULL && suite != NULL) {
         if(slist_insert_front(runner->suites, suite) != 0) {
@@ -245,15 +249,15 @@ runner_add_suite(srunner* runner, ssuite* suite)
 }
 
 void
-runner_add_suites(srunner* runner, ssuite** suites, size_t len)
+srunner_add_suites(srunner* runner, ssuite** suites, size_t len)
 {
     if(runner != NULL && suites != NULL && len != 0)
         while(len--)
-            runner_add_suite(runner, *suites++);
+            srunner_add_suite(runner, *suites++);
 }
 
 void
-runner_run(srunner* runner)
+srunner_run(srunner* runner)
 {
     if(runner != NULL) {
         slistIterator* iterator = slist_iterator(runner->suites);
@@ -279,7 +283,7 @@ runner_run(srunner* runner)
 }
 
 void
-runner_free(srunner* runner)
+srunner_free(srunner* runner)
 {
     slist_free(runner->suites, (FreeFn) ssuite_free);
     free(runner);

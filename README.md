@@ -6,61 +6,104 @@ C library for running unit tests.
 
 ## Getting started
 Clone the repository, and run 'make' to build from source.
-Then do 'make install' to install the library.
+If you want to 'install' the lib, use 'make install'.
 Default installation path:
- - .so -> /usr/local/bin
+ - .so -> /usr/local/lib
  - .h  -> /usr/local/include
 
 If you wish to change directory for header file and/or .so,
-then either modify the BIN_DIR_INSTALL and HEADER_DIR_INSTALL
+then either modify the LIB_DIR_INSTALL and HEADER_DIR_INSTALL
 directories in Makefile or just copy paste the stest.h
 and libstest.so anywhere you'd like.
 
-After setting that up, just include the library in your source file:
-`#include<stest.h>`
-and you are all set.
+After setting that up, just include the library in your source file,
+and VERY IMPORTANT, make sure to add the instalation path for library
+in path for linker to find it!
+You need to set env variable LD_LIBRARY_PATH.
+
+Set it in your shell config files:
+- Fish: setenv LD_LIBRARY_PATH "/usr/local/lib"
+- Bash: export LD_LIBRARY_PATH="/usr/local/lib"
+
+You can use your own defined path also.
+Just make sure the libstest.so is there in that directory.
+
+Now for good measure do: 'sudo ldconfig'
 
 ## Example
 
 ```c
-#include <stest.h>
-#include <ccol.h>
+#include "include/stest.h"
+#include <string.h>
 
-int main(void) {
-    // Use any name you'd like
-    ssuite* suite = ssuite_new("vec_tests");
+void int_test(void);
+void int_test_2(void);
+void string_test(void);
+void string_test_2(void);
+void string_test_3(void);
 
-    // Insert tests into suite
-    ssuite_add_test(suite, vec_create_test);
-    ssuite_add_test(suite, vec_insert_test);
+int
+main(void)
+{
+    ssuite* suite_str = ssuite_new("string_tests");
+    ssuite* suite_int = ssuite_new("int_tests");
 
-    // Create test runner
+    ssuite_add_test(suite_str, string_test);
+    ssuite_add_test(suite_str, string_test_2);
+    ssuite_add_test(suite_str, string_test_3);
+
+    ssuite_add_test(suite_int, int_test);
+    ssuite_add_test(suite_int, int_test_2);
+
     srunner* runner = srunner_new();
-    
-    // Add suite into the runner
-    srunner_add_suite(runner, suite);
+    srunner_add_suite(runner, suite_str);
+    srunner_add_suite(runner, suite_int);
 
-    // Run all suites of tests
     srunner_run(runner);
-
-    return 0;
+    srunner_free(runner);
 }
 
-TEST(vec_create_test) {
-    cvec* vec = cvec_new();
+TEST(int_test)
+{
+    int x = 5;
+    int y = 6;
 
-    ASSERT(sizeof(vec) == sizeof(cvec));
+    ASSERT_EQ(sizeof(x), sizeof(y));
 
-    ASSERT_NEQ(vec != NULL);
+    ASSERT(x == y);
 }
 
-TEST(vec_insert_test) {
-    cvec* vec = cvec_new(sizeof(int));
+TEST(int_test_2)
+{
+    int x = 5;
+    int y = 6;
 
-    ASSERT(vec != NULL);
+    ASSERT_NEQ(x, y);
+    ASSERT(6 == y);
+}
 
-    cvec_push(vec, &(int){5});
+TEST(string_test)
+{
+    const char* first  = "We are equal";
+    const char* second = "We are equal";
 
-    ASSERT_EQ(cvec_len(vec), 1);
+    ASSERT_STR_EQ(first, second);
+}
+
+TEST(string_test_2)
+{
+    const char* first  = "We are equal";
+    const char* second = "We are notequal";
+
+    ASSERT_STR_NEQ(first, second);
+    ASSERT_STR_EQ(first, "We are equal");
+}
+
+TEST(string_test_3)
+{
+    const char* first  = "We are equal";
+    const char* second = "We are notequal";
+
+    ASSERT_STR_EQ(first, second);
 }
 ```

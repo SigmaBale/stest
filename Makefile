@@ -4,7 +4,7 @@ SRCDIR = src
 OBJDIR = build/obj
 
 HEADER_INSTALL_DIR = /usr/local/include
-BIN_INSTALL_DIR = /usr/local/bin
+LIB_INSTALL_DIR = /usr/local/lib
 
 CC = gcc
 INCLUDES := $(foreach dir,$(INCDIRS),-I$(dir))
@@ -29,11 +29,11 @@ clean:
 
 install: $(BIN)
 	@sudo cp -i include/stest.h $(HEADER_INSTALL_DIR)
-	@sudo cp -i build/release/libstest.so $(BIN_INSTALL_DIR) 
+	@sudo cp -i build/release/libstest.so $(LIB_INSTALL_DIR) 
 
 uninstall:
 	@sudo rm $(HEADER_INSTALL_DIR)/stest.h
-	@sudo rm $(BIN_INSTALL_DIR)/libstest.so
+	@sudo rm $(LIB_INSTALL_DIR)/libstest.so
 
 -include $(DEPFILES)
 

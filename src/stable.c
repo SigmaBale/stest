@@ -6,6 +6,7 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 
 struct _smap {
     slist** table;
@@ -19,7 +20,7 @@ hash(void* val)
     long unsigned int    hashvalue;
     const unsigned char* p = (const unsigned char*) val;
 
-    for(hashvalue = 0; *p; val++)
+    for(hashvalue = 0; *p != '\0'; p++)
         hashvalue = *p + 31 * hashvalue;
 
     return hashvalue % TABLESIZE;
@@ -64,8 +65,12 @@ smap_insert(smap* map, void* key, void* value)
 void*
 smap_key(smap* map, void* key)
 {
-    if(map != NULL && key != NULL)
+    if(map != NULL && key != NULL) {
+        if(map->table == NULL
+           && (map->table = (slist**) calloc(TABLESIZE, sizeof(slist*))) == NULL)
+            return NULL;
         return map->table[hash(key)];
+    }
 
     return NULL;
 }

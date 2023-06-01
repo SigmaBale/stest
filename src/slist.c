@@ -63,12 +63,11 @@ slistiter_next(slistIterator* iterator)
 
         const void* temp = iterator->element;
 
-        if(iterator->next != NULL)
+        if(iterator->next != NULL) {
             iterator->element = iterator->next->element;
-        else
+            iterator->next    = iterator->next->next;
+        } else
             iterator->element = NULL;
-
-        iterator->next = iterator->next->next;
 
         return temp;
     }
@@ -86,12 +85,11 @@ slistiter_next_back(slistIterator* iterator)
 
         const void* temp = iterator->element;
 
-        if(iterator->next != NULL)
+        if(iterator->next != NULL) {
             iterator->element = iterator->next->element;
-        else
+            iterator->next    = iterator->next->prev;
+        } else
             iterator->element = NULL;
-
-        iterator->next = iterator->next->prev;
 
         return temp;
     }
