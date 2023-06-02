@@ -15,15 +15,15 @@ typedef struct _smdata smdata;
 
 typedef void (*fnptr)(void);
 
-srunner *runner_new(void);
+srunner *srunner_new(void);
 
-void runner_add_suite(srunner *runner, ssuite *suite);
+void srunner_add_suite(srunner *runner, ssuite *suite);
 
-void runner_add_suites(srunner *runner, ssuite **suites, size_t len);
+void srunner_add_suites(srunner *runner, ssuite **suites, size_t len);
 
-void runner_run(srunner *runner);
+void srunner_run(srunner *runner);
 
-void runner_free(srunner *runner);
+void srunner_free(srunner *runner);
 
 ssuite *ssuite_new(const char *name);
 
