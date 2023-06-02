@@ -1,21 +1,21 @@
 # stest
-==stest== is small compact simple to understand and navigate
+`stest` is small compact simple to understand and navigate
 C library for running unit tests.
 
 ## Getting started
 Clone the repository, and run 'make' to build from source.
 If you want to 'install' the lib, use 'make install'.
 Default installation path:
- - ==.so -> /usr/local/lib==
- - ==.h  -> /usr/local/include==
+ - `.so -> /usr/local/lib`
+ - `.h  -> /usr/local/include`
 
 If you wish to change directory for header file and/or .so,
-then modify the ==LIB_DIR_INSTALL== and ==HEADER_DIR_INSTALL==
+then modify the `LIB_DIR_INSTALL` and `HEADER_DIR_INSTALL`
 directories in Makefile.
 
 Make sure the instalation path for the shared library (.so) is
 in the linker runtime path.
-Now for good measure do: ==sudo ldconfig==
+Now for good measure do: `sudo ldconfig`
 
 ## Example
 
