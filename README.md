@@ -3,8 +3,8 @@
 C library for running unit tests.
 
 ## Getting started
-Clone the repository, and run 'make' to build from source.
-If you want to 'install' the lib, use 'make install'.
+Clone the repository, and run `make` to build from source.
+If you want to install the lib, use `make install`.
 Default installation path:
  - `.so -> /usr/local/lib`
  - `.h  -> /usr/local/include`
