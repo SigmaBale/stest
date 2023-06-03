@@ -10,7 +10,7 @@ CC = gcc
 INCLUDES := $(foreach dir,$(INCDIRS),-I$(dir))
 DEPFLAGS = -MD -MP
 OPT_BUILD = -Os
-CFLAGS := -Wall -Werror -Wextra $(OPT_BUILD) $(INCLUDES) $(DEPFLAGS)
+CFLAGS := -Wall -Werror -Wextra -std=c99 $(OPT_BUILD) $(INCLUDES) $(DEPFLAGS)
 
 SRCFILES := $(wildcard $(SRCDIR)/*.c)
 OBJFILES := $(patsubst $(SRCDIR)/%.c,$(OBJDIR)/%.o,$(SRCFILES))

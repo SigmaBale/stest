@@ -1,6 +1,7 @@
 # stest
 `stest` is small compact simple to understand and navigate
 C library for running unit tests.
+Library is C99 standard compliant and requires no dependencies.
 
 ## Getting started
 Clone the repository, and run `make` to build from source.

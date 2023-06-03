@@ -188,7 +188,7 @@ smap_insert(smap* map, void* key, void* value)
     if(map != NULL) {
 
         // If load factor is exceeded expand the map
-        if(map->len != 0 && map->capacity != 0 && _smap_load_factor(map) >= 0.5)
+        if(map->len != 0 && _smap_load_factor(map) >= 0.5)
             smap_expand(map);
 
         slist** table = map->table;
