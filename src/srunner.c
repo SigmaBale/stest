@@ -213,6 +213,7 @@ ssuite_run_tests(const ssuite* suite)
             const stest* test;
             while((test = slistiter_next_back(iterator)) != NULL) {
                 PRINT_TEST(test->name);
+
                 clock_t tic = clock();
                 test->fn();
                 clock_t toc = clock();
@@ -308,7 +309,7 @@ srunner_run(srunner* runner)
         const ssuite* current;
 
         fprintf(stdout,
-                "Running all %ssuites%s ...\n",
+                "\nRunning all %ssuites%s ...\n",
                 _S_BRIGHT_CYAN_BOLD,
                 _S_RESET_FORMAT);
 

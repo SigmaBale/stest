@@ -203,4 +203,5 @@ slist_free(slist* ls, FreeFn free_fn)
     while((element = slist_pop_front(ls)) != NULL)
         if(free_fn)
             free_fn(element);
+    free(ls);
 }

@@ -173,8 +173,7 @@ _smap_cleanup_inner(smap* map)
  * Inserts the VALUE into the MAP.
  * Key gets hashed and that hash is used for
  * indexing the table, in case of collision
- * linear open addressing is used with
- * increment of 1.
+ * open adressing resolves it using quadratic probing.
  *
  * In case process is out of memory the function
  * will print err message to stderr and exit the
@@ -247,9 +246,12 @@ smap_key(smap* map, void* key)
         // because we are only trying to read from a table that
         // is not even initialized, returning NULL and letting
         // user handle it would be okay but this is test library so lets exit...
-        if(map->table == NULL && (map->table = _table_new(PRIMES[0])) == NULL) {
-            fprintf(stderr, "out of memory");
-            exit(EXIT_FAILURE);
+        if(map->table == NULL) {
+            if((map->table = _table_new(PRIMES[0])) == NULL) {
+                fprintf(stderr, "out of memory");
+                exit(EXIT_FAILURE);
+            }
+            map->capacity = PRIMES[0];
         }
         return map->table[hash(key, map->capacity)];
     }
