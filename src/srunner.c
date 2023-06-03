@@ -95,11 +95,18 @@ smdata_free(smdata* metadata)
         free(metadata);
 }
 
+const char*
+smdata_get_name(smdata* metadata)
+{
+    return (metadata) ? metadata->fn_name : NULL;
+}
+
 void
 assert_failed(smdata* metadata)
 {
     if(smap_insert(&__S_GLOBAL_TABLE__, (void*) metadata->fn_name, metadata) == NULL) {
         fprintf(stderr, "out of memory\n");
+        _smap_cleanup_inner(&__S_GLOBAL_TABLE__);
         exit(EXIT_FAILURE);
     }
 }

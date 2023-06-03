@@ -147,46 +147,6 @@ slist_insert_front(slist* ls, void* element)
     return 0;
 }
 
-int
-slist_remove_front(slist* ls, FreeFn free_fn)
-{
-    if(ls->front == NULL)
-        return 1;
-
-    snode* old_head = ls->front;
-    ls->front       = old_head->next;
-
-    if(ls->front != NULL)
-        ls->front->prev = NULL;
-    else
-        ls->back = NULL;
-
-    if(free_fn)
-        free_fn(snode_free(old_head));
-
-    return 0;
-}
-
-int
-slist_remove_back(slist* ls, FreeFn free_fn)
-{
-    if(ls->back == NULL)
-        return 1;
-
-    snode* old_tail = ls->back;
-    ls->back        = old_tail->prev;
-
-    if(ls->back != NULL)
-        ls->back->next = NULL;
-    else
-        ls->front = NULL;
-
-    if(free_fn)
-        free_fn(snode_free(old_tail));
-
-    return 0;
-}
-
 void*
 slist_pop_front(slist* ls)
 {
@@ -221,9 +181,26 @@ slist_pop_back(slist* ls)
     return snode_free(old_tail);
 }
 
+/*
+ * Returns NULL if slist or slist front node is NULL.
+ * Returns element at the front of the list otherwise.
+ */
+const void*
+slist_peek_front(slist* ls)
+{
+    // so ugly and short
+    return (ls) ? (ls->front ? ls->front->element : NULL) : NULL;
+}
+
+/*
+ * Cleans up the entire list and the values
+ * if the 'free_fn' is provided.
+ */
 void
 slist_free(slist* ls, FreeFn free_fn)
 {
-    while(slist_remove_front(ls, free_fn) == 0)
-        ;
+    void* element;
+    while((element = slist_pop_front(ls)) != NULL)
+        if(free_fn)
+            free_fn(element);
 }

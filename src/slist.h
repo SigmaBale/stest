@@ -29,4 +29,6 @@ const void *slistiter_next(slistIterator *iterator);
 
 const void *slistiter_next_back(slistIterator *iterator);
 
+const void *slist_peek_front(slist *ls);
+
 #endif

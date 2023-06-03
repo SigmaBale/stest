@@ -34,6 +34,8 @@ smdata *smdata_new(const char *exp, const char *src, const char *dst,
 
 void smdata_free(smdata *metadata);
 
+const char *smdata_get_name(smdata *metadata);
+
 void assert_failed(smdata *metadata);
 
 #endif
