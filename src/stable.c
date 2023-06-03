@@ -61,7 +61,7 @@ _smap_load_factor(smap* map)
  * Hashing function.
  */
 long unsigned int
-hash(const void* val)
+hash(const void* val, unsigned int capacity)
 {
     static const unsigned long int HASHCONST = 92821;
 
@@ -71,7 +71,7 @@ hash(const void* val)
     for(hashvalue = 0; *p != '\0'; p++)
         hashvalue = *p + HASHCONST * hashvalue;
 
-    return hashvalue % TABLESIZE;
+    return hashvalue % capacity;
 }
 
 /*
@@ -119,7 +119,7 @@ smap_expand(smap* map)
 
         unsigned int prime;
         // Get the new table size
-        for(int i = 0; i < PSIZE; i++) {
+        for(unsigned int i = 0; i < PSIZE; i++) {
             if((prime = PRIMES[i]) > current) {
                 if((new_table = _table_new(prime)) == NULL) {
                     fprintf(stderr, "out of memory");
@@ -165,7 +165,7 @@ void
 _smap_cleanup_inner(smap* map)
 {
     if(map != NULL && map->table != NULL)
-        for(int size = TABLESIZE; --size >= 0;)
+        for(int size = map->capacity; --size >= 0;)
             slist_free(map->table[size], (FreeFn) smdata_free);
 }
 
@@ -188,17 +188,21 @@ smap_insert(smap* map, void* key, void* value)
     if(map != NULL) {
 
         // If load factor is exceeded expand the map
-        if(_smap_load_factor(map) >= 0.5)
+        if(map->len != 0 && map->capacity != 0 && _smap_load_factor(map) >= 0.5)
             smap_expand(map);
 
-        long unsigned int hashvalue = hash((char*) key);
-        slist**           table     = map->table;
+        slist** table = map->table;
 
-        if(table == NULL && (table = (map->table = _table_new(TABLESIZE))) == NULL) {
-            fprintf(stderr, "out of memory");
-            // Exit if table can't be allocated
-            exit(EXIT_FAILURE);
+        if(table == NULL) {
+            if((table = (map->table = _table_new(PRIMES[0]))) == NULL) {
+                fprintf(stderr, "out of memory");
+                // Exit if table can't be allocated
+                exit(EXIT_FAILURE);
+            }
+            map->capacity = PRIMES[0];
         }
+
+        long unsigned int hashvalue = hash((char*) key, map->capacity);
 
         slist*       current    = map->table[hashvalue];
         unsigned int table_size = map->capacity;
@@ -239,10 +243,15 @@ void*
 smap_key(smap* map, void* key)
 {
     if(map != NULL && key != NULL) {
-        if(map->table == NULL
-           && (map->table = (slist**) calloc(TABLESIZE, sizeof(slist*))) == NULL)
-            return NULL;
-        return map->table[hash(key)];
+        // Not necessary to exit here, maybe just return NULL,
+        // because we are only trying to read from a table that
+        // is not even initialized, returning NULL and letting
+        // user handle it would be okay but this is test library so lets exit...
+        if(map->table == NULL && (map->table = _table_new(PRIMES[0])) == NULL) {
+            fprintf(stderr, "out of memory");
+            exit(EXIT_FAILURE);
+        }
+        return map->table[hash(key, map->capacity)];
     }
 
     return NULL;
@@ -252,7 +261,7 @@ void
 smap_free(smap* map)
 {
     if(map != NULL) {
-        int     size  = TABLESIZE;
+        int     size  = map->capacity;
         slist** table = map->table;
 
         while(size--)

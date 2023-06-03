@@ -54,7 +54,10 @@ static const unsigned int width_result = 4;
 #define PRINT_SUITE(suite) \
     fprintf(stdout, "\n%s-%s%s\n", _S_BRIGHT_CYAN_BOLD, suite, _S_RESET_FORMAT)
 
-#define PRINT_FAILED_AT_SEPARATOR \
+#define PRINT_FAILED_AT_START \
+    fprintf(stdout, "%s+%s\n", _S_BRIGHT_RED_BOLD, _S_RESET_FORMAT)
+
+#define PRINT_FAILED_AT_END \
     fprintf(stdout, "%s~%s\n", _S_BRIGHT_RED_BOLD, _S_RESET_FORMAT)
 
 /***************************************************************************************/
@@ -227,11 +230,11 @@ ssuite_run_tests(const ssuite* suite)
                         exit(EXIT_FAILURE);
                     }
 
-                    PRINT_FAILED_AT_SEPARATOR;
+                    PRINT_FAILED_AT_START;
                     const smdata* current;
                     while((current = slistiter_next_back(entry_iterator)) != NULL)
                         smdata_print(current);
-                    PRINT_FAILED_AT_SEPARATOR;
+                    PRINT_FAILED_AT_END;
                 } else
                     PRINT_SUCCESS(time_elapsed);
             }
