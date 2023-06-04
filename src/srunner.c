@@ -300,7 +300,7 @@ void
 srunner_run(srunner* runner)
 {
     if(runner != NULL) {
-        slistIterator* iterator = slist_iterator(runner->suites);
+        slistIterator* iterator = slist_iterator_rev(runner->suites);
         if(iterator == NULL) {
             fprintf(stdout, "No suites to run...");
             return;
@@ -315,7 +315,7 @@ srunner_run(srunner* runner)
 
         clock_t tic = clock();
 
-        while((current = slistiter_next(iterator)) != NULL)
+        while((current = slistiter_next_back(iterator)) != NULL)
             ssuite_run_tests(current);
 
         clock_t toc = clock();
