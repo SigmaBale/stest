@@ -4,7 +4,17 @@
 #include <stdbool.h>
 #include <string.h>
 
-/*********************** USE MACROS DEFINED BELOW INSTEAD *********************/
+/******************************************************************************/
+/*              ADVANCED ASSERTIONS (USE MACROS DEFINED BELOW)                */
+/******************************************************************************/
+/*
+ * If you wish to fiddle with your own custom metadata for each assertion
+ * then use these two* functions, these can virtually represent any test case,
+ * provided you give the correct function that returns 'bool' for the assertion
+ * you are making.
+ * Usually user of this library should use the macros defined below that
+ * do the work for you, and provide with the correct preproccessor metadata.
+ */
 
 /* Internal assert_eq function */
 extern void _stest_assert_eq(bool result, const char *left, const char *right,
@@ -15,11 +25,17 @@ extern void _stest_assert_eq(bool result, const char *left, const char *right,
 extern void _stest_assert(bool result, const char *assertion, const char *file,
                           const int line, const char *fn_name);
 
-/******************************************************************************/
+/*----------------------------------------------------------------------------*/
+/*----------------------------------------------------------------------------*/
 
 //
+//
+//
+//
 
-/**************************** UNIT TESTS API **********************************/
+/******************************************************************************/
+/*                               UNIT TESTS API                               */
+/******************************************************************************/
 
 /*
  * Wrapper around function name for better clarity as
@@ -69,66 +85,65 @@ extern void _stest_assert(bool result, const char *assertion, const char *file,
                    __LINE__, __func__)
 #endif
 
-/******************************************************************************/
+/*----------------------------------------------------------------------------*/
+/*----------------------------------------------------------------------------*/
 
 //
+//
+//
+//
 
-/*************************** RUNNER/SUITE API *********************************/
+/******************************************************************************/
+/*                              RUNNER/SUITE API                              */
+/******************************************************************************/
 
 /*
- * Opaque type representing runner that runs suites
- * contain within it.
- * Suite being the set of tests that are logically
- * related hence being grouped together in a 'suite'.
+ * Opaque type representing runner that runs suites contained within it.
+ * Suite being the set of tests that are logically related hence being
+ * grouped together in a 'suite'.
  */
 typedef struct _srunner srunner;
 
 /*
  * Opaque type representing individual suite.
- * Suite is considered to be a set/group of tests
- * that are grouped together.
- * If dozen tests are closley related to each other
- * or are testing the same structure or individual
- * element/function, it is generally a good idea to
- * combine them together into a 'suite'.
+ * Suite is considered to be a set/group of tests.
+ * If a group of tests are closley related to each other or are testing
+ * the same structure or individual element/function, it is generally
+ * a good idea to combine them together into a 'suite'.
  */
 typedef struct _ssuite ssuite;
 
 /*
  * Runner constructor.
- * Returns new instance of 'srunner', if malloc
- * returns NULL (out of memory) it returns NULL.
+ * Returns new instance of 'srunner', if malloc returns NULL (out of memory)
+ * it returns NULL.
  */
 srunner *srunner_new(void);
 
 /*
  * Adds new SUITE into RUNNER.
  *
- * If adding the suite fails (out of memory),
- * program prints err to stderr and exits with
- * EXIT_FAILURE.
+ * If adding the suite fails (out of memory), program prints err to stderr
+ * and exits with EXIT_FAILURE.
  */
 void srunner_add_suite(srunner *runner, ssuite *suite);
 
 /*
  * Adds LEN of SUITES into RUNNER.
  *
- * If adding the suites fails (out of memory),
- * program prints err to stderr and exits with
- * EXIT_FAILURE.
+ * If adding the SUITES fails (out of memory), program prints err to stderr
+ * and exits with EXIT_FAILURE.
  */
 void srunner_add_suites(srunner *runner, ssuite **suites, size_t len);
 
 /*
- * Runs the RUNNER, running all the suites
- * in the runner.
+ * Runs the RUNNER, running all the suites in the runner.
  * Each suite in turns runs all of its tests.
  */
 void srunner_run(srunner *runner);
 
 /*
- * Frees the memory allocated by the RUNNER and
- * the contained suites and tests.
+ * Frees the memory allocated by the RUNNER and the contained SUITES and TESTS.
  * Performs complete cleanup.
  */
 void srunner_free(srunner *runner);
@@ -136,15 +151,13 @@ void srunner_free(srunner *runner);
 /*
  * Creates a new instance of 'ssuite'.
  *
- * Suite is a collection of tests semantically
- * connected in some way (or not if you are doing
- * it wrong).
+ * Suite is a collection of tests semantically connected in some way
+ * (or not if you are doing it wrong).
  *
- * You can provide any NAME you want for the suite,
- * just don't provide NULL.
- * If process runs out of memory or name provided is
- * NULL, then it returns NULL.
+ * You can provide any NAME you want for the suite (just don't provide NULL).
+ * If process runs out of memory or name provided is NULL, then it returns NULL.
  *
+ * Note:
  * Currently there is no benefit of naming the suite,
  * but fetching the suite from the runner might become
  * usefull later if/when the API expands and especially
@@ -155,27 +168,20 @@ ssuite *ssuite_new(const char *name);
 /*
  * Use the ssuite_add_test macro instead (below).
  */
-extern void _ssuite_add_test(ssuite* suite, const char *name,
-                             void (*fn)(void));
+extern void _ssuite_add_test(ssuite *suite, const char *name, void (*fn)(void));
 
 /*
  * Inserts FN into SSUITE.
- * FN is a function pointer and SSUITE is 'ssuite' struct.
- * 'fn' is a test where the library ASSERTS are used.
+ * FN is a function pointer representing the test that you want to run.
+ * Use this macro always isntead of the '_ssuite_add_test'.
  *
  * Note:
- * If for example function pointer is valid but the function
- * itself does not contain any ASSERT macros of this library,
- * the test will pass as success even if it is not even defined.
- * Unsoundness here is that test might get printed as it was
- * ran and was successfull even if it is not defined.
- * This should get fixed soon.
- * In the meantime please be carefull and provide correct
- * function pointers, thanks!
- *
- * Use this macro always instead of '_ssuite_add_test' to avoid
- * specifying the function name, because the names get hashed based
- * on the stringify we do on the 'fn'.
+ * If for example function pointer is valid but the function itself does not
+ * contain any ASSERT macros of this library, the test will pass as success even
+ * if the function is not a proper test function. Unsoundness here is that test
+ * might get printed as it was ran and was successfull even if the function that
+ * is running is not an actual test function (it is not testing anything).
+ * So please be carefull and provide the actual tests!
  */
 #ifndef ssuite_add_test
 #define ssuite_add_test(ssuite, fn) _ssuite_add_test(ssuite, #fn, fn)
