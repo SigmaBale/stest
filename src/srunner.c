@@ -1,4 +1,5 @@
 #define __S_SRC_FILE__
+#include "serror.h"
 #include "slist.h"
 #include "srunner.h"
 #include "stable.h"
@@ -24,41 +25,49 @@ static const char* _S_BRIGHT_WHITE_BOLD   = "\x1b[1;97m";
 static const unsigned int width        = 30;
 static const unsigned int width_result = 4;
 
-#define PRINT_TEST(filename)       \
-    fprintf(stdout,                \
-            "%s%-*s%s%s",          \
-            _S_BRIGHT_YELLOW_BOLD, \
-            width,                 \
-            filename,              \
-            _S_RESET_FORMAT,       \
-            "----> ")
+#define PRINT_TEST(filename) \
+    fprintf(stdout, "%s%-*s%s%s", _S_BRIGHT_YELLOW_BOLD, width, filename, _S_RESET_FORMAT, "----> ")
 
-#define PRINT_SUCCESS(time)        \
-    fprintf(stdout,                \
-            "%s%-*s%s [%Lf ms]\n", \
-            _S_BRIGHT_GREEN_BOLD,  \
-            width_result,          \
-            "ok",                  \
-            _S_RESET_FORMAT,       \
-            time * 1000)
+#define PRINT_SUCCESS(time)            \
+    fprintf(stdout,                    \
+            "%s%-*s%s [%s%Lf%s ms]\n", \
+            _S_BRIGHT_GREEN_BOLD,      \
+            width_result,              \
+            "ok",                      \
+            _S_RESET_FORMAT,           \
+            _S_BRIGHT_GREEN_BOLD,      \
+            time * 1000,               \
+            _S_RESET_FORMAT)
 
-#define PRINT_FAILURE(time)        \
-    fprintf(stdout,                \
-            "%s%-*s%s [%Lf ms]\n", \
-            _S_BRIGHT_RED_BOLD,    \
-            width_result,          \
-            "fail",                \
-            _S_RESET_FORMAT,       \
-            time * 1000)
+#define PRINT_FAILURE(time)            \
+    fprintf(stdout,                    \
+            "%s%-*s%s [%s%Lf%s ms]\n", \
+            _S_BRIGHT_RED_BOLD,        \
+            width_result,              \
+            "fail",                    \
+            _S_RESET_FORMAT,           \
+            _S_BRIGHT_RED_BOLD,        \
+            time * 1000,               \
+            _S_RESET_FORMAT)
 
 #define PRINT_SUITE(suite) \
     fprintf(stdout, "\n%s-%s%s\n", _S_BRIGHT_CYAN_BOLD, suite, _S_RESET_FORMAT)
 
-#define PRINT_FAILED_AT_START \
-    fprintf(stdout, "%s+%s\n", _S_BRIGHT_RED_BOLD, _S_RESET_FORMAT)
+#define PRINT_FAILED_AT_START fprintf(stdout, "%s+%s\n", _S_BRIGHT_RED_BOLD, _S_RESET_FORMAT)
 
-#define PRINT_FAILED_AT_END \
-    fprintf(stdout, "%s~%s\n", _S_BRIGHT_RED_BOLD, _S_RESET_FORMAT)
+#define PRINT_FAILED_AT_END fprintf(stdout, "%s~%s\n", _S_BRIGHT_RED_BOLD, _S_RESET_FORMAT)
+
+#define PRINT_RUNNER_RUNNING \
+    fprintf(stdout, "\nRunning all %ssuites%s ...\n", _S_BRIGHT_CYAN_BOLD, _S_RESET_FORMAT)
+
+#define PRINT_RUNNER_FINISHED(elapsed_time)       \
+    fprintf(stdout,                               \
+            "\nElapsed time: %s%f%s seconds\n\n", \
+            _S_BRIGHT_GREEN_BOLD,                 \
+            elapsed_time,                         \
+            _S_RESET_FORMAT);
+
+#define PRINT_RUNNER_EMPTY fprintf(stdout, "Runner has no suites to run...");
 
 /***************************************************************************************/
 
@@ -107,11 +116,7 @@ smdata_get_name(smdata* metadata)
 void
 assert_failed(smdata* metadata)
 {
-    if(smap_insert(&__S_GLOBAL_TABLE__, (void*) metadata->fn_name, metadata) == NULL) {
-        fprintf(stderr, "out of memory\n");
-        _smap_cleanup_inner(&__S_GLOBAL_TABLE__);
-        exit(EXIT_FAILURE);
-    }
+    smap_insert((void*) metadata->fn_name, metadata);
 }
 
 void
@@ -196,8 +201,7 @@ _ssuite_add_test(ssuite* suite, const char* name, void (*fn)(void))
             return;
 
         if(slist_insert_front(suite->tests, test) != 0) {
-            fprintf(stderr, "out of memory\n");
-            exit(EXIT_FAILURE);
+            ERROR_OOM_AND_EXIT;
         }
     }
 }
@@ -221,21 +225,23 @@ ssuite_run_tests(const ssuite* suite)
                 long double time_elapsed = (double) (toc - tic) / CLOCKS_PER_SEC;
 
                 slist* entry;
-                if((entry = smap_key(&__S_GLOBAL_TABLE__, (void*) test->name)) != NULL) {
+                if((entry = smap_key((void*) test->name)) != NULL) {
                     PRINT_FAILURE(time_elapsed);
 
                     slistIterator* entry_iterator = slist_iterator_rev(entry);
 
                     if(entry_iterator == NULL) {
-                        fprintf(stderr, "out of memory\n");
-                        exit(EXIT_FAILURE);
+                        ERROR_OOM_AND_EXIT;
                     }
 
                     PRINT_FAILED_AT_START;
+
                     const smdata* current;
                     while((current = slistiter_next_back(entry_iterator)) != NULL)
                         smdata_print(current);
+
                     PRINT_FAILED_AT_END;
+
                 } else
                     PRINT_SUCCESS(time_elapsed);
             }
@@ -282,8 +288,7 @@ srunner_add_suite(srunner* runner, ssuite* suite)
 {
     if(runner != NULL && suite != NULL) {
         if(slist_insert_front(runner->suites, suite) != 0) {
-            fprintf(stderr, "out of memory\n");
-            exit(EXIT_FAILURE);
+            ERROR_OOM_AND_EXIT;
         }
     }
 }
@@ -302,16 +307,13 @@ srunner_run(srunner* runner)
     if(runner != NULL) {
         slistIterator* iterator = slist_iterator_rev(runner->suites);
         if(iterator == NULL) {
-            fprintf(stdout, "No suites to run...");
+            PRINT_RUNNER_EMPTY;
             return;
         }
 
-        const ssuite* current;
+        const ssuite* current = NULL;
 
-        fprintf(stdout,
-                "\nRunning all %ssuites%s ...\n",
-                _S_BRIGHT_CYAN_BOLD,
-                _S_RESET_FORMAT);
+        PRINT_RUNNER_RUNNING;
 
         clock_t tic = clock();
 
@@ -322,11 +324,7 @@ srunner_run(srunner* runner)
 
         double elapsed_time = (double) (toc - tic) / CLOCKS_PER_SEC;
 
-        fprintf(stdout,
-                "\nTotal elapsed time: %s%f%s seconds\n",
-                _S_BRIGHT_GREEN_BOLD,
-                elapsed_time,
-                _S_RESET_FORMAT);
+        PRINT_RUNNER_FINISHED(elapsed_time);
     }
 }
 

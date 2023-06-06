@@ -199,9 +199,11 @@ slist_peek_front(slist* ls)
 void
 slist_free(slist* ls, FreeFn free_fn)
 {
-    void* element;
-    while((element = slist_pop_front(ls)) != NULL)
-        if(free_fn)
-            free_fn(element);
-    free(ls);
+    if(ls != NULL) {
+        void* element;
+        while((element = slist_pop_front(ls)) != NULL)
+            if(free_fn)
+                free_fn(element);
+        free(ls);
+    }
 }
