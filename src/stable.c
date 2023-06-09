@@ -132,15 +132,13 @@ smap_expand(void)
 
 /*
  * This function runs when .so (shared library) is getting unloaded.
- * ELF file format contains sections called .ctors and .dtors (constructors,
- * destructors) which contain references to the functions with the attributes
- * constructor for .ctor and destructor for .dtor.
- * .ctors and .dtors require support by loader/linker-script, it is up to linker
- * to organize it and loader to run it (the functions defined in .ctors/.dtors).
- * And so you can imagine on embedded systems (bare metal) this might not be available,
- * meaning the global table might leak memory if its inner table is not freed and was
- * initialized, this is actually not a big problem as the OS should cleanup that memory
- * anyways and we are exiting the program, but it is 'impolite'.
+ * Basically when main returns or we exit().
+ * Our global table then gets cleaned up so we don't leak memory.
+ * Although global variables don't get tracked by programs that
+ * track memory leaks because globals are actually not leaking,
+ * they have static lifetime and can be accessed even after main
+ * returns, but we call the cleanup function anyways cuz why not.
+ * (__attribute__((some_attribute)) - is a clang/gcc extension).
  */
 __attribute__((destructor)) void
 _smap_cleanup_inner(void)
