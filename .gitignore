@@ -1,5 +1,6 @@
 ### C ###
 ~
+.vim_undo
 build
 # Prerequisites
 *.d

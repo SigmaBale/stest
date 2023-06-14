@@ -66,8 +66,9 @@ hash(const void* val)
     long unsigned int    hashvalue;
     const unsigned char* p = (const unsigned char*) val;
 
-    for(hashvalue = 0; *p != '\0'; p++)
+    for(hashvalue = 0; *p != '\0'; p++) {
         hashvalue = *p + HASHCONST * hashvalue;
+    }
 
     return hashvalue % __S_GLOBAL_TABLE__.capacity;
 }
@@ -119,12 +120,13 @@ smap_expand(void)
 
     // Re-hash all the keys and insert the values
     slist* entry;
-    while(current--)
+    while(current--) {
         if((entry = *old_table) != NULL) {
             smdata*     old_val = (smdata*) slist_peek_front(entry);
             const char* old_key = smdata_get_name(old_val);
             smap_insert((void*) old_key, old_val);
         }
+    }
 
     // Free the old table
     free(old_table);
@@ -147,10 +149,11 @@ _smap_cleanup_inner(void)
     unsigned int size  = __S_GLOBAL_TABLE__.capacity;
 
     if(table != NULL) {
-        while(size--)
+        while(size--) {
             slist_free(*table++, (FreeFn) smdata_free);
+        }
 
-        free(table);
+        free(__S_GLOBAL_TABLE__.table);
     }
 }
 
@@ -208,8 +211,9 @@ smap_insert(void* key, void* value)
         inserted = true;
 
         // If load factor is exceeded expand the map
-        if(_smap_load_factor() >= 0.5)
+        if(_smap_load_factor() >= 0.5) {
             smap_expand();
+        }
     }
 
     // Finally insert the value, exit if it fails.
@@ -225,8 +229,9 @@ smap_key(void* key)
 {
     slist** table = __S_GLOBAL_TABLE__.table;
 
-    if(table != NULL && key != NULL)
+    if(table != NULL && key != NULL) {
         return table[hash(key)];
+    }
 
     return NULL;
 }
